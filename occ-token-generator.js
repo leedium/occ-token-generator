@@ -20,26 +20,10 @@
 const program = require("commander");
 const axios = require("axios");
 
-const pkgJSON = require("./package");
-
 const HTTPS_PREFIX = "https://";
 const DEFAULT_TIMEOUT = 119000;
 
 let token;
-
-program
-    .version(pkgJSON.version)
-    .command("occtoken", "-s [eserver] -k [sourcekey] -t [timeout](optional)")
-    .description(pkgJSON.description)
-    .option("-s, --server <server>", "Target OCC admin server (include 'https')")
-    .option("-k, --key <key>", "API accesss token generated in admin")
-    .option("-t, --timeout <optional>", "Timeout(ms) t refresh the token.  Defaukts to approx 2min")
-    .parse(process.argv);
-
-
-if (typeof program.timeout === 'undefined' || isNaN(program.timeout)) {
-    program.timeout = DEFAULT_TIMEOUT;
-}
 
 /**
  * Api call to login and generate admin access tokens
@@ -48,19 +32,21 @@ if (typeof program.timeout === 'undefined' || isNaN(program.timeout)) {
  * @param refresh
  * @returns {*}
  */
-const loginToOCC = (adminServer, token, refresh = false) => axios({
+const loginToOCC = (adminServer, token, refresh = false) =>
+  axios({
     method: "post",
-    url: refresh ? `${adminServer}/ccadmin/v1/refresh` : `${adminServer}/ccadmin/v1/login`,
+    url: refresh
+      ? `${adminServer}/ccadmin/v1/refresh`
+      : `${adminServer}/ccadmin/v1/login`,
     responseType: "json",
     params: {
-        "grant_type": "client_credentials"
+      grant_type: "client_credentials"
     },
     headers: {
-        "Authorization": `Bearer ${token}`,
-        "content-type": "application/x-www-form-urlencoded"
+      Authorization: `Bearer ${token}`,
+      "content-type": "application/x-www-form-urlencoded"
     }
-});
-
+  });
 
 /**
  * Starts the tire to generate an access token
@@ -69,19 +55,20 @@ const loginToOCC = (adminServer, token, refresh = false) => axios({
  * @param refresh
  */
 const generateToken = (server, token, repeat = false) => {
-    server = server.indexOf(HTTPS_PREFIX) !== 0 ? `${HTTPS_PREFIX}${server}` : server;
-    loginToOCC(server, token, repeat)
-        .then(({data}) => {
-            console.log(`old Token`, token);
-            console.log(`\n\nBearer ${data.access_token}`);
-            token = data.access_token;
-            setTimeout(() => {
-                generateToken(server, data.access_token, true, program.timeout);
-            }, program.timeout || DEFAULT_TIMEOUT);
-        })
-        .catch(err => {
-            console.log(Error(err));
-        });
+  server =
+    server.indexOf(HTTPS_PREFIX) !== 0 ? `${HTTPS_PREFIX}${server}` : server;
+  loginToOCC(server, token, repeat)
+    .then(({ data }) => {
+      console.log(`old Token`, token);
+      console.log(`\n\nBearer ${data.access_token}`);
+      token = data.access_token;
+      setTimeout(() => {
+        generateToken(server, data.access_token, true, program.timeout);
+      }, program.timeout || DEFAULT_TIMEOUT);
+    })
+    .catch(err => {
+      console.log(Error(err));
+    });
 };
 
 /**
@@ -92,11 +79,30 @@ const getCurrentToken = () => token;
 
 //  Run if exectured from the command line
 if (require.main === module) {
-    generateToken(program.server, program.key)
-} else {
-    module.exports({
-        generateToken,
-        getCurrentToken
-    });
-}
+  program
+    .version("1.0.0")
+    .command("occtoken", "-s [eserver] -k [sourcekey] -t [timeout](optional)")
+    .description(
+      "Simple tool to generate and refresh tokens for Oracle Commerce Cloud (OCC)"
+    )
+    .option(
+      "-s, --server <server>",
+      "Target OCC admin server (include 'https')"
+    )
+    .option("-k, --key <key>", "API accesss token generated in admin")
+    .option(
+      "-t, --timeout <optional>",
+      "Timeout(ms) t refresh the token.  Defaukts to approx 2min"
+    )
+    .parse(process.argv);
 
+  if (typeof program.timeout === "undefined" || isNaN(program.timeout)) {
+    program.timeout = DEFAULT_TIMEOUT;
+  }
+  generateToken(program.server, program.key);
+} else {
+  module.exports({
+    generateToken,
+    getCurrentToken
+  });
+}
