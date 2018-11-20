@@ -3,12 +3,12 @@ Simple tool to generate and refresh tokens for Oracle Commerce Cloud (OCC)
 
 
 ### Installation
-Global
+#### Global
 ```
 $ npm i -g
 ```
 
-Local
+### Local
 Include js as a dependency.
 
 ### Instructions
@@ -29,3 +29,4 @@ Commands:
   help [cmd]                display help for [cmd]
 ```
 
+ 
