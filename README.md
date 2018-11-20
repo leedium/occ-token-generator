@@ -1,5 +1,5 @@
 # occ-token-generator
-Simple tool to generate and refresh tokens for Oracle Commerce Cloud (OCC)
+Simple tool to generate and [login and refresh tokens](https://docs.oracle.com/en/cloud/saas/commerce-cloud/cxocc/Authentication.html "Oracle Commerce Cloud Authentication") for [Oracle Commerce Cloud](https://docs.oracle.com/en/cloud/saas/commerce-cloud/index.html) (OCC)
 
 
 ### Installation
