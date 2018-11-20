@@ -1,0 +1,26 @@
+{
+  "name": "occ-token-generator",
+  "version": "1.0.0",
+  "description": "Simple tool to generate and refresh tokens for Oracle Commerce Cloud (OCC)",
+  "main": "occ-token-generator.js",
+  "bin": {
+    "occtoken": "occ-token-generator.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/leedium/occ-token-generator.git"
+  },
+  "author": "LEEDIUM",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/leedium/occ-token-generator/issues"
+  },
+  "homepage": "https://github.com/leedium/occ-token-generator#readme",
+  "dependencies": {
+    "axios": "^0.18.0",
+    "commander": "^2.19.0"
+  }
+}
