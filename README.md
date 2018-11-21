@@ -25,7 +25,7 @@ Options:
   -h, --help                output usage information
 
 Commands:
-  occtoken                  -s [eserver] -k [sourcekey] -t [timeout](optional)
+  occtoken                  -s [server] -k [sourcekey] -t [timeout](optional)
   help [cmd]                display help for [cmd]
 ```
 
