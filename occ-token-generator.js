@@ -36,9 +36,10 @@ let token;
 const loginToOCC = (adminServer, token, refresh = false) => {
   return axios({
     method: "post",
-    url: refresh && inited
-      ? `${adminServer}/ccadmin/v1/refresh`
-      : `${adminServer}/ccadmin/v1/login`,
+    url:
+      refresh && inited
+        ? `${adminServer}/ccadmin/v1/refresh`
+        : `${adminServer}/ccadmin/v1/login`,
     responseType: "json",
     params: {
       grant_type: "client_credentials"
@@ -48,7 +49,7 @@ const loginToOCC = (adminServer, token, refresh = false) => {
       "content-type": "application/x-www-form-urlencoded"
     }
   });
-}
+};
 
 /**
  * Starts the tire to generate an access token
@@ -58,23 +59,26 @@ const loginToOCC = (adminServer, token, refresh = false) => {
  */
 const generateToken = (server, token, repeat, timeout) => {
   return new Promise((resolve, reject) => {
-    server = server.indexOf(HTTPS_PREFIX) !== 0 ? `${HTTPS_PREFIX}${server}` : server;
+    server =
+      server.indexOf(HTTPS_PREFIX) !== 0 ? `${HTTPS_PREFIX}${server}` : server;
 
     const req = ({ data }) => {
       console.log(`\n\nBearer ${data.access_token}`);
       token = data.access_token;
-      setTimeout(() => {
-        generateToken(server, data.access_token, repeat, timeout );
-        inited = true;
-      }, inited ? timeout : INITIAL_TIMEOUT);
-      console.log('timeout', timeout);
+      setTimeout(
+        () => {
+          generateToken(server, data.access_token, repeat, timeout);
+          inited = true;
+        },
+        inited ? timeout : INITIAL_TIMEOUT
+      );
       resolve(data.access_token);
     };
 
     loginToOCC(server, token, repeat)
       .then(req)
       .catch(reject);
-  })
+  });
 };
 
 /**
@@ -100,10 +104,7 @@ if (require.main === module) {
       "-t, --timeout <optional>",
       "Timeout(ms) t refresh the token.  Defaukts to approx 2min"
     )
-    .option(
-      "-r, --refresh",
-      "should the token refresh"
-    )
+    .option("-r, --refresh", "should the token refresh")
     .parse(process.argv);
 
   if (typeof program.timeout === "undefined" || isNaN(program.timeout)) {
