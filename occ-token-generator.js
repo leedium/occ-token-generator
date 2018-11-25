@@ -36,7 +36,7 @@ let token;
 const loginToOCC = (adminServer, token, refresh = false) => {
   return axios({
     method: "post",
-    url: refresh && inited
+    url: refresh || inited
       ? `${adminServer}/ccadmin/v1/refresh`
       : `${adminServer}/ccadmin/v1/login`,
     responseType: "json",
@@ -48,7 +48,7 @@ const loginToOCC = (adminServer, token, refresh = false) => {
       "content-type": "application/x-www-form-urlencoded"
     }
   });
-}
+};
 
 /**
  * Starts the tire to generate an access token
@@ -60,21 +60,24 @@ const generateToken = (server, token, repeat, timeout) => {
   return new Promise((resolve, reject) => {
     server = server.indexOf(HTTPS_PREFIX) !== 0 ? `${HTTPS_PREFIX}${server}` : server;
 
-    const req = ({ data }) => {
-      console.log(`\n\nBearer ${data.access_token}`);
+    const req = function({ data }) {
+      // clear the screen
+      process.stdout.write("\033c\033[3J");
+      console.log(`Bearer ${data.access_token}`);
       token = data.access_token;
       setTimeout(() => {
-        generateToken(server, data.access_token, repeat, timeout );
-        inited = true;
-      }, inited ? timeout : INITIAL_TIMEOUT);
-      console.log('timeout', timeout);
+        generateToken(server, data.access_token, repeat, timeout);
+      }, timeout);
       resolve(data.access_token);
     };
-
-    loginToOCC(server, token, repeat)
-      .then(req)
+    loginToOCC(server, token, !inited ? false : !inited ? INITIAL_TIMEOUT : program.refresh)
+      .then((res) => {
+        inited = true;
+        req(res);
+      })
       .catch(reject);
-  })
+
+  });
 };
 
 /**
@@ -83,40 +86,32 @@ const generateToken = (server, token, repeat, timeout) => {
  */
 const getCurrentToken = () => token;
 
-//  Run if exectured from the command line
-if (require.main === module) {
-  program
-    .version("1.0.0")
-    .command("occtoken", "-s [eserver] -k [sourcekey] -t [timeout](optional)")
-    .description(
-      "Simple tool to generate and refresh tokens for Oracle Commerce Cloud (OCC)"
-    )
-    .option(
-      "-s, --server <server>",
-      "Target OCC admin server (include 'https')"
-    )
-    .option("-k, --key <key>", "API accesss token generated in admin")
-    .option(
-      "-t, --timeout <optional>",
-      "Timeout(ms) t refresh the token.  Defaukts to approx 2min"
-    )
-    .option(
-      "-r, --refresh",
-      "should the token refresh"
-    )
-    .parse(process.argv);
+program
+  .version("1.0.0")
+  .command("occtoken", "-s [eserver] -k [sourcekey] -t [timeout](optional)")
+  .description(
+    "Simple tool to generate and refresh tokens for Oracle Commerce Cloud (OCC)"
+  )
+  .option(
+    "-s, --server <server>",
+    "Target OCC admin server (include 'https')"
+  )
+  .option("-k, --key <key>", "API accesss token generated in admin")
+  .option(
+    "-t, --timeout <optional>",
+    "Timeout(ms) t refresh the token.  Defaukts to approx 2min"
+  )
+  .option(
+    "-r, --refresh",
+    "should the token refresh"
+  )
+  .parse(process.argv);
 
-  if (typeof program.timeout === "undefined" || isNaN(program.timeout)) {
-    program.timeout = INITIAL_TIMEOUT;
-  }
-  if (typeof program.refresh === "undefined") {
-    program.refresh = false;
-  }
-
-  generateToken(program.server, program.key, program.refresh, program.timeout);
-} else {
-  module.exports({
-    generateToken,
-    getCurrentToken
-  });
+if (typeof program.timeout === "undefined" || isNaN(program.timeout)) {
+  program.timeout = INITIAL_TIMEOUT;
 }
+if (typeof program.refresh === "undefined") {
+  program.refresh = false;
+}
+
+generateToken(program.server, program.key, program.refresh, program.timeout);
