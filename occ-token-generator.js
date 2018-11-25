@@ -76,7 +76,6 @@ const generateToken = (server, token, repeat, timeout) => {
         req(res);
       })
       .catch(reject);
-
   });
 };
 
